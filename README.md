@@ -2,7 +2,7 @@
 
 **Easy Paper Importer** is an easy way import paper metadata from a DOI into Obsidian for note taking and literature management.
 
-This plugin was partially coded with GitHub Copilot to save time (e.g. get basics up and running + allowing for easier learning curve). Generated code is reviewed as needed. Use at your own discretion and report any issues you find.
+This plugin was (very) partially coded with GitHub Copilot to save time (e.g. get basics up and running + allowing for easier learning curve). Generated code is reviewed as needed. Use at your own discretion and report any issues you find.
 
 ## Why?
 

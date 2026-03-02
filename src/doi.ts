@@ -1,5 +1,6 @@
 import { requestUrl } from "obsidian";
 import { PaperMetadata } from "./types";
+import { parseArxivId, fetchArxivMetadata } from "./arxiv";
 
 const CROSSREF_API = "https://api.crossref.org/works/";
 
@@ -22,21 +23,33 @@ export function parseDoi(input: string): string {
  * Fetch paper metadata from the CrossRef API using a DOI.
  */
 export async function fetchPaperMetadata(doi: string): Promise<PaperMetadata> {
+	// If the input looks like an arXiv identifier/URL, delegate to arXiv fetcher.
+	const arxivId = parseArxivId(doi);
+	if (arxivId) {
+		return await fetchArxivMetadata(arxivId);
+	}
+
 	const cleanDoi = parseDoi(doi);
 	const url = `${CROSSREF_API}${encodeURIComponent(cleanDoi)}`;
 
-	const response = await requestUrl({
-		url,
-		method: "GET",
-		headers: {
-			Accept: "application/json",
-			// CrossRef asks for a polite User-Agent with contact info
-			"User-Agent": "ObsidianEasyPaperImporter/0.0.1 (https://github.com)",
-		},
-	});
+	let response;
+	try {
+		response = await requestUrl({
+			url,
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				// CrossRef asks for a polite User-Agent with contact info
+				"User-Agent": "ObsidianEasyPaperImporter/0.0.1 (https://github.com)",
+			},
+		});
+	} catch (e: any) {
+		const status = e?.status ?? "unknown";
+		throw new Error(`DOI metadata request failed: ${url} (status ${status})`);
+	}
 
 	if (response.status !== 200) {
-		throw new Error(`Failed to fetch DOI metadata: HTTP ${response.status}`);
+		throw new Error(`Failed to fetch DOI metadata: ${url} (HTTP ${response.status})`);
 	}
 
 	const data = response.json as Record<string, unknown>;
