@@ -13,7 +13,8 @@ function sanitiseFilename(name: string): string {
 		.replace(/[\\/:*?"<>|]/g, "")
 		.replace(/\s+/g, " ")
 		.trim()
-		.slice(0, 200); // cap length
+		.replace(/\.+$/, "") // Windows doesn't like trailing dots
+		.slice(0, 200); // Cap length for filesystem limits
 }
 
 /**
@@ -33,7 +34,7 @@ function getAuthorSurname(name: string): string {
  */
 function renderFilenameTemplate(template: string, paper: PaperMetadata): string {
 	if (!template) return "";
-	return template.replace(/{{\s*(\w+)\s*}}/g, (_m, token) => {
+	return template.replace(/{{\s*(\w+)\s*}}/g, (_m: string, token: string) => {
 		switch (token) {
 			case "title":
 				return paper.title || "";
@@ -41,12 +42,17 @@ function renderFilenameTemplate(template: string, paper: PaperMetadata): string 
 				return paper.year != null ? String(paper.year) : "";
 			case "doi":
 				return paper.doi || "";
-			case "authors":
+			case "authors": {
+				if (!paper.authors || paper.authors.length === 0) return "";
+				if (paper.authors.length <= 3) {
+					return paper.authors.map(a => getAuthorSurname(a)).join(", ");
+				}
+				return `${getAuthorSurname(paper.authors[0] ?? "")} et al.`;
+			}
 			case "first_authors":
 			case "first_author": {
 				if (!paper.authors || paper.authors.length === 0) return "";
-				const surname = getAuthorSurname(paper.authors[0] ?? '');
-				return paper.authors.length > 1 ? `${surname}` : surname;
+				return getAuthorSurname(paper.authors[0] ?? "");
 			}
 			default:
 				return "";
@@ -141,7 +147,7 @@ function buildFrontmatter(paper: PaperMetadata, settings: EasyPaperSettings): st
  * Render a template string by replacing known tokens with paper metadata.
  */
 function renderTemplate(template: string, paper: PaperMetadata, settings: EasyPaperSettings): string {
-	return template.replace(/{{\s*(\w+)\s*}}/g, (_m, token) => {
+	return template.replace(/{{\s*(\w+)\s*}}/g, (_m: string, token: string) => {
 		const t = token.toLowerCase();
 		switch (t) {
 			case "title":

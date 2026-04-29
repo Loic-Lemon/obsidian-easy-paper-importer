@@ -43,8 +43,11 @@ export async function fetchPaperMetadata(doi: string): Promise<PaperMetadata> {
 				"User-Agent": "ObsidianEasyPaperImporter/0.0.1 (https://github.com)",
 			},
 		});
-	} catch (e: any) {
-		const status = e?.status ?? "unknown";
+	} catch (e: unknown) {
+		let status = "unknown";
+		if (e && typeof e === "object" && "status" in e) {
+			status = String((e as { status: unknown }).status);
+		}
 		throw new Error(`DOI metadata request failed: ${url} (status ${status})`);
 	}
 

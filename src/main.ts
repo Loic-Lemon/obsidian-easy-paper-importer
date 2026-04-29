@@ -72,15 +72,16 @@ export default class EasyPaperImporter extends Plugin {
 	}
 
 	async loadSettings() {
-		const data = (await this.loadData()) ?? {};
+		const data = (await this.loadData()) as Record<string, unknown> | null ?? {};
 		// Strip internal keys so they don't leak into settings
-		const { index: _index, ...rest } = data as Record<string, unknown>;
+		const rest = { ...data };
+		delete rest.index;
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, rest as Partial<EasyPaperSettings>);
 	}
 
 	async saveSettings() {
 		// Preserve other keys (e.g. index) already in data.json
-		const existing = (await this.loadData()) ?? {};
+		const existing = (await this.loadData()) as Record<string, unknown> | null ?? {};
 		await this.saveData({ ...existing, ...this.settings });
 	}
 }

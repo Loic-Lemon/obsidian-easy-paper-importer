@@ -17,11 +17,11 @@ export function parseArxivId(input: string): string | null {
   if (prefixMatch?.[1]) return prefixMatch[1];
 
   // Bare arXiv id formats: modern 4-digit prefix or legacy cs/0101010 style
-  const idMatch = t.match(/^(\d{4}\.\d{4,5}(?:v\d+)?|[a-z\-]+\/[0-9]{7}(?:v\d+)?)$/i);
+  const idMatch = t.match(/^(\d{4}\.\d{4,5}(?:v\d+)?|[a-z-]+\/[0-9]{7}(?:v\d+)?)$/i);
   if (idMatch?.[1]) return idMatch[1];
 
   // Some DOIs embed arXiv IDs, e.g. 10.48550/arXiv.2410.05491 — detect and extract
-  const doiArxivMatch = t.match(/arxiv[.:\/](\d{4}\.\d{4,5}(?:v\d+)?|[a-z\-]+\/[0-9]{7}(?:v\d+)?)/i);
+  const doiArxivMatch = t.match(/arxiv[.:/](\d{4}\.\d{4,5}(?:v\d+)?|[a-z-]+\/[0-9]{7}(?:v\d+)?)/i);
   if (doiArxivMatch?.[1]) return doiArxivMatch[1];
 
   return null;
@@ -45,8 +45,11 @@ export async function fetchArxivMetadata(input: string): Promise<PaperMetadata> 
         Accept: "application/atom+xml, application/xml, text/xml",
       },
     });
-  } catch (e: any) {
-    const status = e?.status ?? "unknown";
+  } catch (e: unknown) {
+    let status = "unknown";
+    if (e && typeof e === "object" && "status" in e) {
+      status = String((e as { status: unknown }).status);
+    }
     throw new Error(`arXiv metadata request failed: ${url} (status ${status})`);
   }
 

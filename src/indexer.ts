@@ -89,7 +89,7 @@ export class PaperIndex {
         this.index.meta = this.index.meta || {};
         this.index.meta.lastBuilt = new Date().toISOString();
         // Preserve other keys (e.g. settings) already in data.json
-        const existing = (await this.plugin.loadData()) ?? {};
+        const existing = (await this.plugin.loadData()) as Record<string, unknown> | null ?? {};
         await this.plugin.saveData({ ...existing, index: this.index });
     }
 }

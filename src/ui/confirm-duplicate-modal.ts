@@ -33,6 +33,8 @@ export class ConfirmDuplicateModal extends Modal {
     onClose() {
         const { contentEl } = this;
         contentEl.empty();
+        // Resolve with false if closed without clicking "Import anyway"
+        this.resolve(false);
     }
 
     // convenience helper

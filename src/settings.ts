@@ -89,7 +89,7 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl).setName("Setup basics").setHeading();
 		containerEl.createEl("p", {
-			text: "Pick where to import your papers and how to name them, etc."
+			text: "Pick where to import your papers and how to name them."
 		});
 
 		let folderInput: TextComponent;
@@ -105,25 +105,25 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 			.addButton(b => b
 				.setButtonText('Browse')
 				.onClick(() => {
-					new FolderSuggestModal(this.app, async (folder) => {
+					new FolderSuggestModal(this.app, (folder) => {
 						this.plugin.settings.paperFolder = folder.path;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 						folderInput.setValue(folder.path);
 					}).open();
 				})
 			)
 			.addButton(b => b
 				.setButtonText('Clear')
-				.onClick(async () => {
+				.onClick(() => {
 					this.plugin.settings.paperFolder = '';
-					await this.plugin.saveSettings();
+					void this.plugin.saveSettings();
 					folderInput.setValue('');
 				})
 			);
 		
 		new Setting(containerEl)
 			.setName("Note title")
-			.setDesc("Define the note title format using metadata keys in double curly braces. E.g. {{title}} - {{authors}} ({{year}}). The default behaviour of {{authors}} is to only include the first author followed.")
+			.setDesc("Define the note title format using metadata keys in double curly braces. E.g. {{title}} - {{authors}} ({{year}}).")
 			.addText((text) => text
 					.setPlaceholder("{{first_authors}}_{{year}}")
 					.setValue(this.plugin.settings.noteTitleFormat)
@@ -134,15 +134,14 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl).setName("Metadata").setHeading();
 		containerEl.createEl("p", {
-			text: "It is important to decide on which meta data you want early to avoid any unnecessary hassle later. Only the main ones should be fine (as in the default)."
+			text: "It is important to decide on which metadata you want early to avoid any unnecessary hassle later."
 		});
 
 		new Setting(containerEl)
 			.setName('Note metadata fields')
 			.setDesc('Comma-separated list of metadata keys to include. Incorrect metadata keys will be ignored.')
 			.addText(t => t
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setPlaceholder('title, authors, doi, year')
+				.setPlaceholder('Title, authors, DOI, year')
 				.setValue(this.plugin.settings.metadataFields.join(', '))
 				.onChange(async v => {
 				this.plugin.settings.metadataFields = v.split(',').map(s => s.trim()).filter(Boolean);
@@ -151,7 +150,7 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Include import date')
-			.setDesc('Toggle including the date when the paper was imported as part of the note metadata. This does not modify existing imports and only applies to imports when the setting is enabled.')
+			.setDesc('Toggle including the date when the paper was imported as part of the note metadata.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.includeImportDate)
 				.onChange(async v => {
@@ -160,8 +159,8 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 			}));
 
 		new Setting(containerEl)
-			.setName('Include PDF Field')
-			.setDesc('Toggle including a field ready to be linked to the PDF of the paper. Can be useful to link either the downloaded PDF or a link to the PDF.')
+			.setName('Include PDF field')
+			.setDesc('Toggle including a field ready to be linked to the PDF of the paper.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.includePdfField)
 				.onChange(async v => {
@@ -169,7 +168,7 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 			}));
 
-		new Setting(containerEl).setName("Note Body").setHeading();
+		new Setting(containerEl).setName("Note body").setHeading();
 		containerEl.createEl("p", {
 			text: "Allow for custom automated note body content on file creation."
 		});
@@ -177,7 +176,7 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 		let templateInput: TextComponent;
 		new Setting(containerEl)
 			.setName('Template file path')
-			.setDesc('Set the path to a markdown file in your vault to use as a template. If empty, no template will be used.')
+			.setDesc('Set the path to a Markdown file in your vault to use as a template.')
 			.addText(t => {
 				templateInput = t;
 				t.setPlaceholder('No template selected')
@@ -187,18 +186,18 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 			.addButton(b => b
 				.setButtonText('Browse')
 				.onClick(() => {
-					new FileSuggestModal(this.app, async (file) => {
+					new FileSuggestModal(this.app, (file) => {
 						this.plugin.settings.templateFilePath = file.path;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 						templateInput.setValue(file.path);
 					}).open();
 				})
 			)
 			.addButton(b => b
 				.setButtonText('Clear')
-				.onClick(async () => {
+				.onClick(() => {
 					this.plugin.settings.templateFilePath = '';
-					await this.plugin.saveSettings();
+					void this.plugin.saveSettings();
 					templateInput.setValue('');
 				})
 			);
@@ -207,7 +206,7 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 			.setName('Custom properties')
 			.setDesc('Comma-separated list of custom frontmatter properties to include in new notes (e.g. "tags, comment").')
 			.addText(t => t
-				.setPlaceholder('tags, comment')
+				.setPlaceholder('Tags, comment')
 				.setValue(this.plugin.settings.customProperties.join(', '))
 				.onChange(async v => {
 					this.plugin.settings.customProperties = v.split(',').map(s => s.trim()).filter(Boolean);
@@ -220,8 +219,8 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 		});
 
 		new Setting(containerEl)
-			.setName('Confirm duplicate imports')
-			.setDesc('Enable a confirmation prompt when importing a paper that has already been imported before. Utilizes title and/or DOI to detect duplicated.')
+			.setName('Duplicate check')
+			.setDesc('Enable a confirmation prompt when importing a paper that already exists.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.confirmDuplicateImports)
 				.onChange(async v => {
