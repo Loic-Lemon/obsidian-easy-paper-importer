@@ -111,7 +111,7 @@ sequenceDiagram
     participant ArXiv as arXiv API
     participant Index as PaperIndex
     participant Dup as ConfirmDuplicateModal
-    participant Note as createPaperNote
+    participant Gen as createPaperNote
     participant Vault as Obsidian Vault
 
     U->>Modal: Click ribbon / command
@@ -141,13 +141,13 @@ sequenceDiagram
         end
     end
 
-    Modal->>Note: createPaperNote(app, paper, settings)
-    Note->>Vault: ensureFolder(paperFolder)
-    Note->>Note: renderFilenameTemplate()
-    Note->>Note: sanitiseFilename() + dedup suffix
-    Note->>Note: buildFrontmatter() + buildBody()
-    Note->>Vault: vault.create(filePath, content)
-    Note-->>Modal: filePath
+    Modal->>Gen: createPaperNote(app, paper, settings)
+    Gen->>Vault: ensureFolder(paperFolder)
+    Gen->>Gen: renderFilenameTemplate()
+    Gen->>Gen: sanitiseFilename() + dedup suffix
+    Gen->>Gen: buildFrontmatter() + buildBody()
+    Gen->>Vault: vault.create(filePath, content)
+    Gen-->>Modal: filePath
     Modal->>U: Open new note & show "Imported: {title}"
 ```
 
