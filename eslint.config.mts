@@ -23,8 +23,11 @@ export default tseslint.config(
 	},
 	...obsidianmd.configs.recommended,
 	{
+		plugins: {
+			obsidianmd,
+		},
 		rules: {
-			"obsidianmd/ui/sentence-case": ["error", { acronyms: ["DOI"] }],
+			"obsidianmd/ui/sentence-case": ["error", { acronyms: ["DOI", "PDF", "URL", "ISSN"] }],
 		},
 	},
 	globalIgnores([
