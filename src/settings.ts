@@ -11,6 +11,7 @@ export interface EasyPaperSettings {
 	templateFilePath?: string;
 	confirmDuplicateImports: boolean;
 	customProperties: string[];
+	bibtexDoiField: string;
 }
 
 export const DEFAULT_SETTINGS: EasyPaperSettings = {
@@ -22,6 +23,7 @@ export const DEFAULT_SETTINGS: EasyPaperSettings = {
 	templateFilePath: "",
 	confirmDuplicateImports: true,
 	customProperties: [],
+	bibtexDoiField: "doi",
 };
 
 class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
@@ -227,5 +229,16 @@ export class EasyPaperSettingTab extends PluginSettingTab {
 					this.plugin.settings.confirmDuplicateImports = v;
 					await this.plugin.saveSettings();
 			}));
+
+		new Setting(containerEl)
+			.setName('BibTeX DOI field')
+			.setDesc('Frontmatter property key used to read the DOI for BibTeX export.')
+			.addText(t => t
+				.setPlaceholder('doi')
+				.setValue(this.plugin.settings.bibtexDoiField)
+				.onChange(async v => {
+					this.plugin.settings.bibtexDoiField = v.trim() || 'doi';
+					await this.plugin.saveSettings();
+				}));
 	}
 }

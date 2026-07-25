@@ -2,6 +2,7 @@ import { Plugin, Notice, TFile } from "obsidian";
 import { DEFAULT_SETTINGS, EasyPaperSettings, EasyPaperSettingTab } from "./settings";
 import { DoiInputModal } from "./ui/doi-modal";
 import { PaperIndex } from "./indexer";
+import { doiToBibtex } from "./bibtex";
 
 export default class EasyPaperImporter extends Plugin {
 	settings: EasyPaperSettings;
@@ -49,6 +50,34 @@ export default class EasyPaperImporter extends Plugin {
 			callback: async () => {
 				await this.paperIndex.rebuild();
 				new Notice("Paper index rebuilt.");
+			},
+		});
+
+		// Copy BibTeX from DOI command
+		this.addCommand({
+			id: "copy-bibtex-from-doi",
+			name: "Copy BibTeX from DOI",
+			callback: async () => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file) {
+					new Notice("no DOI");
+					return;
+				}
+				const cache = this.app.metadataCache.getFileCache(file);
+				const doiKey = this.settings.bibtexDoiField || "doi";
+				const doi = cache?.frontmatter?.[doiKey] as string | undefined;
+				if (!doi) {
+					new Notice("no DOI");
+					return;
+				}
+				try {
+					const bibtex = await doiToBibtex(doi);
+					await navigator.clipboard.writeText(bibtex);
+					new Notice("copied!");
+				} catch (e: unknown) {
+					const msg = e instanceof Error ? e.message : "Unknown error";
+					new Notice(`Error: ${msg}`);
+				}
 			},
 		});
 

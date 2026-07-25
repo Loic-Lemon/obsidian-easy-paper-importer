@@ -44,6 +44,7 @@ graph TB
     subgraph Logic["Logic Layer"]
         doi["doi.ts<br/><i>CrossRef API Client</i>"]
         arxiv["arxiv.ts<br/><i>arXiv API Client</i>"]
+        bibtex["bibtex.ts<br/><i>BibTeX Transform</i>"]
         note["note.ts<br/><i>Note Generator<br/>Frontmatter + Body</i>"]
     end
 
@@ -56,6 +57,7 @@ graph TB
     main --> doiModal
     main --> settingsUI
     main --> indexer
+    main --> bibtex
     doiModal --> doi
     doiModal --> arxiv
     doiModal --> note
@@ -87,6 +89,7 @@ graph TB
 | 📄 | **Body templates** | Optional `.md` template file with `{{abstract}}`, `{{authors}}`, `{{subjects}}` and more |
 | 🔍 | **Duplicate detection** | In-memory index checks by DOI and title; optional confirmation modal |
 | 🔄 | **Auto-index sync** | Vault create/delete/rename events keep the index up to date |
+| 📋 | **BibTeX export** | "Copy BibTeX from DOI" command — reads DOI from frontmatter, fetches BibTeX via CrossRef, copies to clipboard |
 | ⚙️ | **Full settings tab** | Folder picker, template picker, field selection, toggle switches |
 
 ---
@@ -271,6 +274,7 @@ erDiagram
         string templateFilePath "Path to body template .md"
         boolean confirmDuplicateImports "Show duplicate warning"
         string[] customProperties "Extra empty frontmatter keys"
+        string bibtexDoiField "Frontmatter key for DOI look-up"
     }
 
     IndexData {
@@ -298,6 +302,7 @@ The plugin stores settings and the paper index in a single `data.json` file:
   "templateFilePath": "",
   "confirmDuplicateImports": true,
   "customProperties": [],
+  "bibtexDoiField": "doi",
   "index": {
     "byDOI": {
       "10.1038/nature12373": "Papers/Smith_2013.md"
@@ -388,6 +393,7 @@ Token matching is case-insensitive (e.g., `{{DOI}}` and `{{doi}}` both work).
 |----|------|---------|--------|
 | `import-paper-from-doi` | Import paper from DOI | Ribbon icon (<img src="https://lucide.dev/icons/quote" width="14" height="14" alt="quote">) + Command palette | Opens `DoiInputModal` — enter DOI, fetches metadata, creates note |
 | `rebuild-paper-index` | Rebuild paper index | Command palette | Re-scans paper folder, rebuilds DOI/title index from frontmatter |
+| `copy-bibtex-from-doi` | Copy BibTeX from DOI | Command palette | Reads DOI from active note's frontmatter, fetches BibTeX via CrossRef transform API, copies to clipboard |
 
 ---
 
@@ -403,6 +409,7 @@ Token matching is case-insensitive (e.g., `{{DOI}}` and `{{doi}}` both work).
 | Template file path | `string` | `""` | Path to `.md` body template (optional) |
 | Confirm duplicate imports | `boolean` | `true` | Show confirmation dialog when duplicate detected |
 | Custom properties | `string[]` | `[]` | Extra empty frontmatter keys (comma-separated) |
+| BibTeX DOI field | `string` | `"doi"` | Frontmatter property key used to read the DOI for BibTeX export |
 
 ---
 
@@ -450,6 +457,7 @@ src/
 ├── settings.ts           # EasyPaperSettings + defaults + setting tab UI
 ├── doi.ts                # CrossRef API client + DOI parsing
 ├── arxiv.ts              # arXiv API client + arXiv ID parsing
+├── bibtex.ts             # CrossRef BibTeX transform API
 ├── indexer.ts            # PaperIndex — in-memory duplicate detection
 ├── note.ts               # Note generation (frontmatter + body templates)
 └── ui/
